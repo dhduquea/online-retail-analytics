@@ -1,0 +1,5 @@
+Hallazgo 1 
+Los 20 productos más importantes representan aproximadamente el 14 % de la facturación. lo que implica para un negocio con un catalogo de 4070 productos el 0.5% de los productos tienen una altisima participación en las venta generadas por le comercio. Por lo que se podria considerar buscar estrategis que fortalescan las ventas de los demas productos 
+Hallazgo 2. 
+El 18 % del catálogo genera cerca del 80 % de los ingresos. lo que representa para el negocio un comportamiento de ventas asintoticas. por lo que se podria recomendar intentar determinar que "clasificacion" de producto esta generando el mayor numero de ventas y poder observar tendencias de mercado por determinados productos. Hallazgo 3. 
+No parece haber una dependencia extrema de un unico producto, lo que implica para el comercio margenes de maniobras amplias para tomar deciciones que busquen fortalecer otros productos en casos criticos de perdida de ventas sin generar afectacion.
