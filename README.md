@@ -1,31 +1,58 @@
-# Análisis Estratégico del Portafolio de Productos
+# Análisis de Ventas — E-commerce (Online Retail)
 
-## Descripción
-Este proyecto analiza el comportamiento de las ventas de una empresa de comercio electrónico con el propósito de evaluar el nivel de concentración de la facturación entre los productos del portafolio. El análisis busca identificar posibles dependencias hacia determinados artículos y generar información que apoye la toma de decisiones comerciales basadas en datos.
+Análisis exploratorio y de negocio sobre las transacciones de un retailer online del Reino Unido, con foco en KPIs comerciales, tendencias de ventas, desempeño de productos, distribución geográfica y segmentación de clientes (RFM), orientado a la toma de decisiones basada en datos.
 
-## Objetivo del proyecto
-Analizar la distribución de la facturación del portafolio de productos para identificar el nivel de concentración de las ventas, reconocer los productos estratégicos y generar información que apoye la toma de decisiones comerciales relacionadas con inventario, marketing y gestión del portafolio.
+## Fuente de datos
 
-## Contexto del negocio
-La dirección comercial desea conocer qué productos sostienen la facturación del negocio, identificar posibles riesgos asociados a la dependencia de determinados artículos y obtener información que permita optimizar estrategias relacionadas con inventario, marketing y gestión del portafolio de productos.
+[UCI Machine Learning Repository — Online Retail Dataset](https://archive.ics.uci.edu/dataset/352/online+retail) (datos abiertos).
 
-## Dataset
-Para el presente trabajo se empleo los datos abiertos: https://archive.ics.uci.edu/dataset/352/online+retail, Se trata de un conjunto de datos transaccionales que contiene todas las transacciones realizadas entre el 01/12/2010 y el 09/12/2011 para un comercio minorista en línea sin establecimiento físico, con sede y registrado en el Reino Unido.
-## Herramientas utilizadas
+Transacciones de un comercio online del Reino Unido entre el **01 dic 2010** y el **09 dic 2011**, con 541,909 registros.
+
+## Contenido del repositorio
+
+| Archivo | Descripción |
+|---|---|
+| `Online_Retail.xlsx` | Dataset original en formato Excel |
+| `Analisis_Ventas_Ecommerce.ipynb` | Notebook con el análisis completo (limpieza de datos, KPIs, tendencias, productos, geografía, segmentación RFM) |
+| `reporte_ventas_ecommerce.html` | Reporte web interactivo con los resultados y gráficos |
+| `reporte_ventas_ecommerce.js` | Script con la lógica de los gráficos del reporte web (debe estar en la misma carpeta que el `.html`) |
+| `reporte_ejecutivo_ventas.md` | Resumen ejecutivo de una página con hallazgos y recomendaciones |
+| `requirements.txt` | Librerías de Python necesarias para ejecutar el notebook |
+
+## Cómo ejecutar el notebook
+
+1. Instala las dependencias:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Abre el notebook:
+
+   ```bash
+   jupyter notebook Analisis_Ventas_Ecommerce.ipynb
+   ```
+
+3. Ejecuta todas las celdas en orden (`Kernel > Restart & Run All`).
+
+## Cómo visualizar el reporte web
+
+1. Asegúrate de que `reporte_ventas_ecommerce.html` y `reporte_ventas_ecommerce.js` estén en la **misma carpeta**.
+2. Abre el archivo `.html` directamente en tu navegador (doble clic), o usa la extensión **Live Server** de VSCode para una vista con recarga automática.
+3. Se requiere conexión a internet, ya que las fuentes y la librería de gráficos (Chart.js) se cargan desde un CDN externo.
+
+## Resumen de hallazgos
+
+- **Ingresos totales:** £10,666,684 · **Pedidos:** 19,960 · **Clientes:** 4,338 · **Ticket promedio:** £534.40
+- Reino Unido concentra el **84.6%** de los ingresos; el resto del mundo (37 países) es aún un canal marginal.
+- El **26.1%** de los clientes genera el **80%** de los ingresos (concentración tipo Pareto).
+- Fuerte estacionalidad: pico de ventas en noviembre, sin actividad los sábados.
+- Tasa de cancelación/devolución del **14.81%**, concentrada en pocas referencias.
+
+El detalle completo de hallazgos y recomendaciones está en `reporte_ejecutivo_ventas.md` y en el reporte web.
 
 ## Metodología
 
-## Principales hallazgos
-
-## Recomendaciones
-
-## Estructura del proyecto
-
-## Autor
-
-## Preguntas de negocio
-
-- ¿Qué productos generan la mayor parte de la facturación?
-- ¿Existe una alta concentración de las ventas en un pequeño grupo de productos?
-- ¿Qué nivel de diversificación presenta el portafolio?
-- ¿Qué oportunidades de optimización pueden identificarse a partir del comportamiento de las ventas?
+- Se excluyen del cálculo de ingresos las facturas canceladas (prefijo `C` en `InvoiceNo`) y las líneas con `Quantity` o `UnitPrice` ≤ 0.
+- La segmentación de clientes utiliza el modelo **RFM** (Recencia, Frecuencia, Monetario) con puntuación por quintiles.
+- Todas las cifras están expresadas en libras esterlinas (£).
