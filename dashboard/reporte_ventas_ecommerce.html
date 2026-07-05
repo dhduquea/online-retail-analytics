@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corte de Caja — Reporte de Ventas Online Retail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper: #E7E3D4;
+    --paper-dark: #DAD5C1;
+    --paper-darker: #C9C3AC;
+    --ink: #1E2C3A;
+    --ink-soft: #4A5A68;
+    --brass: #96702F;
+    --brass-light: #B08A45;
+    --forest: #3E5C42;
+    --stamp: #A13A2E;
+    --line: rgba(30,44,58,0.18);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+    line-height: 1.55;
+    background-image:
+      repeating-linear-gradient(180deg, rgba(30,44,58,0.035) 0px, rgba(30,44,58,0.035) 1px, transparent 1px, transparent 34px);
+  }
+
+  ::selection{ background: var(--brass-light); color: var(--paper); }
+
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  h1,h2,h3{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  a{ color: var(--brass); }
+
+  .wrap{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- NAV ---------- */
+  .ledger-nav{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--ink);
+    border-bottom: 3px double var(--brass-light);
+  }
+  .ledger-nav .wrap{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 18px;
+  }
+  .ledger-nav .brand{
+    font-family:'Fraunces', serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+    white-space: nowrap;
+  }
+  .ledger-nav .brand span{ color: var(--brass-light); }
+  .ledger-nav ul{
+    list-style: none;
+    display:flex;
+    gap: 22px;
+    margin:0; padding:0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .ledger-nav a{
+    color: rgba(231,227,212,0.75);
+    text-decoration: none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color .15s ease;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+  }
+  .ledger-nav a:hover{ color: var(--paper); border-color: var(--brass-light); }
+
+  /* ---------- HERO / RECEIPT ---------- */
+  .hero{
+    padding: 64px 28px 40px;
+    display:flex;
+    justify-content:center;
+  }
+  .receipt{
+    width: 100%;
+    max-width: 620px;
+    background: #F3F0E5;
+    border: 1px solid var(--line);
+    box-shadow: 0 22px 45px -18px rgba(30,44,58,0.35);
+    padding: 40px 38px 30px;
+    position: relative;
+  }
+  .receipt::before, .receipt::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; height: 14px;
+    background-image: radial-gradient(circle at 10px 50%, transparent 7px, #F3F0E5 7.5px);
+    background-size: 20px 14px;
+    background-repeat: repeat-x;
+  }
+  .receipt::before{ top:-7px; }
+  .receipt::after{ bottom:-7px; transform: rotate(180deg); }
+
+  .receipt-head{
+    text-align:center;
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+  }
+  .receipt-head .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 10px;
+  }
+  .receipt-head h1{
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .receipt-head p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .receipt-line{
+    display:flex;
+    justify-content: space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .receipt-line span:first-child{ color: var(--ink-soft); }
+  .receipt-line span:last-child{ font-weight: 600; }
+
+  .receipt-total{
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink);
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .receipt-total .label{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .receipt-total .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 30px;
+    font-weight: 600;
+    color: var(--forest);
+  }
+
+  .receipt-foot{
+    text-align:center;
+    margin-top: 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+  .stamp{
+    position:absolute;
+    top: 26px;
+    right: -14px;
+    transform: rotate(9deg);
+    border: 2.5px solid var(--stamp);
+    color: var(--stamp);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 5px 10px;
+    border-radius: 4px;
+    opacity: 0.85;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section{
+    padding: 70px 0 20px;
+    border-top: 1px solid var(--line);
+  }
+  section:first-of-type{ border-top:none; }
+
+  .sec-head{
+    display:flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 34px;
+    flex-wrap: wrap;
+  }
+  .sec-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--brass);
+    letter-spacing: 0.1em;
+    border: 1px solid var(--brass-light);
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+  .sec-head h2{
+    font-size: clamp(24px, 3vw, 32px);
+  }
+  .sec-intro{
+    max-width: 720px;
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin-bottom: 36px;
+  }
+
+  /* ---------- KPI CARDS ---------- */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .kpi-card{
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+    padding: 20px 18px;
+    position: relative;
+  }
+  .kpi-card::before{
+    content: "";
+    position:absolute;
+    top:0; left:0; bottom:0;
+    width: 4px;
+    background: var(--brass);
+  }
+  .kpi-card.neg::before{ background: var(--stamp); }
+  .kpi-card .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: clamp(22px, 2.4vw, 28px);
+    font-weight: 600;
+    color: var(--ink);
+    display:block;
+    margin-bottom: 6px;
+  }
+  .kpi-card.neg .num{ color: var(--stamp); }
+  .kpi-card .lbl{
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- CHART CARDS ---------- */
+  .chart-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .chart-grid.single{ grid-template-columns: 1fr; }
+  .chart-grid.thirds{ grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 860px){
+    .chart-grid, .chart-grid.thirds{ grid-template-columns: 1fr; }
+  }
+  .card{
+    background: #F3F0E5;
+    border: 1px solid var(--line);
+    padding: 22px 22px 12px;
+  }
+  .card h3{
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .card .card-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    display:block;
+  }
+  .card .chart-holder{
+    position: relative;
+    height: 300px;
+  }
+  .card .chart-holder.tall{ height: 360px; }
+  .card .chart-holder.short{ height: 230px; }
+
+  .callout{
+    background: var(--ink);
+    color: var(--paper);
+    padding: 26px 28px;
+    margin-top: 22px;
+    display:flex;
+    gap: 20px;
+    align-items:center;
+    flex-wrap: wrap;
+  }
+  .callout .big{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--brass-light);
+    white-space: nowrap;
+  }
+  .callout p{ margin:0; color: rgba(231,227,212,0.85); font-size: 14.5px; max-width: 620px; }
+
+  /* ---------- TABLE ---------- */
+  table.ledger{
+    width:100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.ledger th{
+    text-align:left;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--ink);
+    padding: 10px 12px;
+  }
+  table.ledger td{
+    padding: 10px 12px;
+    border-bottom: 1px dotted var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  table.ledger tr:nth-child(even){ background: rgba(30,44,58,0.04); }
+  .badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+    letter-spacing: 0.04em;
+  }
+  .badge.champ{ color: var(--forest); }
+  .badge.pot{ color: var(--brass); }
+
+  /* ---------- RECOMMENDATIONS ---------- */
+  .actions{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap: 18px;
+  }
+  .action-item{
+    background: var(--paper-dark);
+    border-left: 3px solid var(--forest);
+    padding: 18px 20px;
+  }
+  .action-item .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--forest);
+    display:block;
+    margin-bottom: 8px;
+  }
+  .action-item p{ margin:0; font-size: 14.5px; color: var(--ink); }
+
+  .finding-item{
+    padding: 14px 0;
+    border-bottom: 1px dotted var(--line);
+    display:flex;
+    gap: 16px;
+  }
+  .finding-item:last-child{ border-bottom:none; }
+  .finding-item .mk{
+    font-family:'IBM Plex Mono', monospace;
+    color: var(--brass);
+    font-weight: 600;
+    flex-shrink:0;
+  }
+  .finding-item p{ margin:0; font-size: 15px; }
+
+  footer{
+    margin-top: 60px;
+    border-top: 3px double var(--brass-light);
+    background: var(--ink);
+    color: rgba(231,227,212,0.7);
+    padding: 34px 0 40px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+  }
+  footer strong{ color: var(--paper); }
+
+  @media (max-width: 640px){
+    .ledger-nav ul{ display:none; }
+    .receipt{ padding: 30px 22px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="ledger-nav">
+  <div class="wrap">
+    <div class="brand">LIBRO DE VENTAS <span>· Online Retail</span></div>
+    <ul>
+      <li><a href="#kpis">Resumen</a></li>
+      <li><a href="#tendencia">Tendencia</a></li>
+      <li><a href="#productos">Productos</a></li>
+      <li><a href="#geografia">Geografía</a></li>
+      <li><a href="#clientes">Clientes</a></li>
+      <li><a href="#conclusiones">Conclusiones</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="receipt">
+    <div class="stamp">ANALIZADO</div>
+    <div class="receipt-head">
+      <div class="eyebrow">Corte de caja · Ejercicio comercial</div>
+      <h1>Reporte de Ventas</h1>
+      <p>PERIODO 01&nbsp;DIC&nbsp;2010 — 09&nbsp;DIC&nbsp;2011&nbsp;&nbsp;·&nbsp;&nbsp;RETAILER ONLINE (UK)</p>
+    </div>
+
+    <div class="receipt-line"><span>Pedidos procesados</span><span>19,960</span></div>
+    <div class="receipt-line"><span>Clientes únicos</span><span>4,338</span></div>
+    <div class="receipt-line"><span>Unidades vendidas</span><span>5,588,376</span></div>
+    <div class="receipt-line"><span>Ticket promedio</span><span>£534.40</span></div>
+    <div class="receipt-line"><span>Países atendidos</span><span>38</span></div>
+    <div class="receipt-line"><span>Tasa de cancelación</span><span>14.81%</span></div>
+
+    <div class="receipt-total">
+      <span class="label">Ingreso Total</span>
+      <span class="value">£10,666,684</span>
+    </div>
+    <div class="receipt-foot">Gracias por su preferencia — vuelva pronto</div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section id="kpis">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;01</span>
+      <h2>Resumen ejecutivo</h2>
+    </div>
+    <p class="sec-intro">Lectura general del estado del negocio durante los 12 meses de operación registrados. Estas cifras son la base sobre la que se construyen el resto de los análisis del libro.</p>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span class="num">£10.67M</span>
+        <span class="lbl">Ingresos totales del periodo</span>
+      </div>
+      <div class="kpi-card">
+        <span class="num">19,960</span>
+        <span class="lbl">Pedidos (invoices) válidos</span>
+      </div>
+      <div class="kpi-card">
+        <span class="num">£534.40</span>
+        <span class="lbl">Ticket promedio por pedido</span>
+      </div>
+      <div class="kpi-card">
+        <span class="num">4,338</span>
+        <span class="lbl">Clientes únicos identificados</span>
+      </div>
+      <div class="kpi-card">
+        <span class="num">3,922</span>
+        <span class="lbl">Referencias (SKU) distintas vendidas</span>
+      </div>
+      <div class="kpi-card neg">
+        <span class="num">£896,812</span>
+        <span class="lbl">Valor devuelto/cancelado (14.81% de pedidos)</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="big">84.6%</div>
+      <p>de los ingresos totales provienen de un único país — <strong style="color:#F3F0E5">Reino Unido</strong>. El resto del mundo (37 países) aporta apenas el 15.4% restante: la dependencia geográfica es el riesgo estructural más visible del negocio.</p>
+    </div>
+  </section>
+
+  <section id="tendencia">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;02</span>
+      <h2>Tendencia temporal de ventas</h2>
+    </div>
+    <p class="sec-intro">Evolución de ingresos y pedidos mes a mes, y patrones de comportamiento según día de la semana y hora del día — claves para planificar campañas, personal y logística.</p>
+
+    <div class="chart-grid single">
+      <div class="card">
+        <h3>Ingresos y pedidos por mes</h3>
+        <span class="card-note">£ ingresos (barras) · nº pedidos (línea) — dic 2011 incompleto (solo hasta el día 9)</span>
+        <div class="chart-holder tall"><canvas id="chartMensual"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid" style="margin-top:22px;">
+      <div class="card">
+        <h3>Ingresos por día de la semana</h3>
+        <span class="card-note">No se registra actividad de venta los sábados</span>
+        <div class="chart-holder"><canvas id="chartDia"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Ingresos por hora del día</h3>
+        <span class="card-note">Ventana operativa: 06:00–20:00</span>
+        <div class="chart-holder"><canvas id="chartHora"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="big">+136%</div>
+      <p>crecimiento de ingresos entre febrero (£523.6K, el mes más bajo) y noviembre 2011 (£1.51M, el pico del periodo) — la campaña de fin de año concentra la mayor demanda del año.</p>
+    </div>
+  </section>
+
+  <section id="productos">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;03</span>
+      <h2>Desempeño de productos</h2>
+    </div>
+    <p class="sec-intro">Identificación del catálogo que sostiene el negocio: qué referencias generan más ingresos, cuáles rotan en mayor volumen, y cuáles concentran las devoluciones.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <h3>Top 10 productos por ingresos</h3>
+        <span class="card-note">£ generados en el periodo</span>
+        <div class="chart-holder tall"><canvas id="chartProdIng"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Top 10 productos por unidades</h3>
+        <span class="card-note">Unidades vendidas en el periodo</span>
+        <div class="chart-holder tall"><canvas id="chartProdUnid"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-grid single" style="margin-top:22px;">
+      <div class="card">
+        <h3>Top 10 productos con más unidades devueltas</h3>
+        <span class="card-note">Volumen devuelto/cancelado por referencia — señal de calidad o de descripción incorrecta</span>
+        <div class="chart-holder"><canvas id="chartDevol"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="geografia">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;04</span>
+      <h2>Distribución geográfica</h2>
+    </div>
+    <p class="sec-intro">Reino Unido domina el volumen de operación. Al aislar el resto de los mercados se revela dónde existe tracción internacional incipiente que vale la pena cultivar.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <h3>Top 10 países por ingresos (incl. UK)</h3>
+        <span class="card-note">Escala logarítmica — UK domina el eje</span>
+        <div class="chart-holder tall"><canvas id="chartPaisConUK"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Top 9 países por ingresos (excl. UK)</h3>
+        <span class="card-note">Oportunidad de expansión internacional</span>
+        <div class="chart-holder tall"><canvas id="chartPaisSinUK"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="clientes">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;05</span>
+      <h2>Segmentación de clientes (RFM)</h2>
+    </div>
+    <p class="sec-intro">Clasificación de los 4,338 clientes según <strong>Recencia, Frecuencia y Monetario</strong>, para dirigir acciones comerciales diferenciadas por tipo de cliente.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <h3>Clientes por segmento</h3>
+        <span class="card-note">Distribución de la base de clientes</span>
+        <div class="chart-holder"><canvas id="chartSegClientes"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Ingresos por segmento</h3>
+        <span class="card-note">% del ingreso total aportado por cada grupo</span>
+        <div class="chart-holder"><canvas id="chartSegIngresos"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="big">26.1%</div>
+      <p>de los clientes (los mejor puntuados en RFM) genera el 80% de los ingresos totales — una concentración clásica de Pareto que hace prioritaria la retención de este grupo por sobre la adquisición masiva.</p>
+    </div>
+
+    <div class="chart-grid single" style="margin-top:22px;">
+      <div class="card">
+        <h3>Curva de Pareto — concentración de ingresos por cliente</h3>
+        <span class="card-note">% acumulado de clientes vs. % acumulado de ingresos</span>
+        <div class="chart-holder tall"><canvas id="chartPareto"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:22px;">
+      <h3>Top 10 clientes por valor</h3>
+      <span class="card-note">Ordenados por gasto total en el periodo</span>
+      <table class="ledger">
+        <thead>
+          <tr><th>ID Cliente</th><th>Gasto total</th><th>Nº pedidos</th><th>Días desde su última compra</th><th>Segmento</th></tr>
+        </thead>
+        <tbody id="tablaClientes"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="conclusiones">
+    <div class="sec-head">
+      <span class="sec-num">PARTIDA&nbsp;06</span>
+      <h2>Hallazgos y recomendaciones</h2>
+    </div>
+    <p class="sec-intro">Lectura conjunta de todo el libro de ventas, traducida en decisiones concretas para los próximos trimestres.</p>
+
+    <div class="card" style="margin-bottom: 30px;">
+      <h3 style="margin-bottom:14px;">Hallazgos clave</h3>
+      <div class="finding-item">
+        <span class="mk">01</span>
+        <p>El negocio depende en un <strong>84.6%</strong> de un solo mercado (Reino Unido); el resto del mundo aún es un canal marginal pese a operar en 38 países.</p>
+      </div>
+      <div class="finding-item">
+        <span class="mk">02</span>
+        <p>El <strong>26.1%</strong> de los clientes concentra el <strong>80%</strong> de los ingresos — la cartera "Campeones" (934 clientes, 21.5% de la base) por sí sola aporta el <strong>70.2%</strong> del ingreso total.</p>
+      </div>
+      <div class="finding-item">
+        <span class="mk">03</span>
+        <p>La demanda tiene fuerte estacionalidad: noviembre concentra el pico anual, coherente con compras de fin de año; no hay operación registrada los sábados.</p>
+      </div>
+      <div class="finding-item">
+        <span class="mk">04</span>
+        <p>Un grupo reducido de SKU (artículos de regalo y decoración: cake stands, bunting, portavelas) explica una porción desproporcionada de ingresos y unidades.</p>
+      </div>
+      <div class="finding-item">
+        <span class="mk">05</span>
+        <p>La tasa de cancelación/devolución (<strong>14.81%</strong> de los pedidos, £896,812) es significativa y se concentra en unas pocas referencias puntuales.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="action-item">
+        <span class="tag">Retención</span>
+        <p>Programa de fidelización dedicado a los segmentos "Campeones" y "Clientes Leales": son el 44.8% de la base y el 86% del ingreso — cada punto de retención aquí vale más que diez de adquisición nueva.</p>
+      </div>
+      <div class="action-item">
+        <span class="tag">Reactivación</span>
+        <p>Campañas de win-back para los 1,304 clientes en riesgo o de bajo valor antes de que abandonen definitivamente la relación comercial.</p>
+      </div>
+      <div class="action-item">
+        <span class="tag">Expansión</span>
+        <p>Evaluar inversión comercial y logística en Países Bajos, Irlanda (EIRE), Alemania y Francia — ya son los mercados internacionales con mayor tracción orgánica.</p>
+      </div>
+      <div class="action-item">
+        <span class="tag">Inventario</span>
+        <p>Asegurar stock prioritario y buffer adicional para los 10 SKU top antes de los meses de mayor demanda (sep–nov).</p>
+      </div>
+      <div class="action-item">
+        <span class="tag">Calidad</span>
+        <p>Auditar las fichas de producto y el proceso logístico de las referencias con más devoluciones, especialmente "Paper Craft, Little Birdie" y "Medium Ceramic Top Storage Jar".</p>
+      </div>
+      <div class="action-item">
+        <span class="tag">Ticket promedio</span>
+        <p>Explorar cross-sell y bundles entre los productos top para elevar el ticket promedio actual de £534.40 por pedido.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    CIERRE DE LIBRO — Reporte generado a partir de <strong>Online_Retail.xlsx</strong> (541,909 registros, dic 2010–dic 2011)<br>
+    Cifras en libras esterlinas (£). Se excluyen pedidos cancelados y líneas con cantidad o precio ≤ 0 del cálculo de ingresos, salvo donde se indique lo contrario.
+  </div>
+</footer>
+
+<script>
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.color = '#4A5A68';
+Chart.defaults.font.size = 11;
+
+const INK = '#1E2C3A';
+const BRASS = '#96702F';
+const BRASS_L = '#B08A45';
+const FOREST = '#3E5C42';
+const STAMP = '#A13A2E';
+const SLATE = '#6B7F8C';
+const GRID = 'rgba(30,44,58,0.10)';
+
+function fmtGBP(v){
+  return '£' + Number(v).toLocaleString('en-GB', {maximumFractionDigits:0});
+}
+function fmtNum(v){
+  return Number(v).toLocaleString('en-GB', {maximumFractionDigits:0});
+}
+
+const baseGridOpts = {
+  scales:{
+    x:{ grid:{ display:false }, border:{ color: GRID } },
+    y:{ grid:{ color: GRID }, border:{ display:false } }
+  },
+  plugins:{ legend:{ display:false } }
+};
+
+const ventasMensuales = [
+  {"m":"2010-12","ing":823746.14,"ped":1559},
+  {"m":"2011-01","ing":691364.56,"ped":1086},
+  {"m":"2011-02","ing":523631.89,"ped":1100},
+  {"m":"2011-03","ing":717639.36,"ped":1454},
+  {"m":"2011-04","ing":537808.62,"ped":1246},
+  {"m":"2011-05","ing":770536.02,"ped":1681},
+  {"m":"2011-06","ing":761739.90,"ped":1533},
+  {"m":"2011-07","ing":719221.19,"ped":1475},
+  {"m":"2011-08","ing":759138.38,"ped":1361},
+  {"m":"2011-09","ing":1058590.17,"ped":1837},
+  {"m":"2011-10","ing":1154979.30,"ped":2040},
+  {"m":"2011-11","ing":1509496.33,"ped":2769},
+  {"m":"2011-12","ing":638792.68,"ped":819}
+];
+
+new Chart(document.getElementById('chartMensual'), {
+  data:{
+    labels: ventasMensuales.map(d=>d.m),
+    datasets:[
+      {type:'bar', label:'Ingresos', data: ventasMensuales.map(d=>d.ing), backgroundColor: BRASS_L, borderRadius:2, order:2, yAxisID:'y'},
+      {type:'line', label:'Pedidos', data: ventasMensuales.map(d=>d.ped), borderColor: INK, backgroundColor: INK, tension:.3, pointRadius:3, order:1, yAxisID:'y1'}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ boxWidth:10, usePointStyle:true } },
+      tooltip:{ callbacks:{ label:(c)=> c.dataset.label==='Ingresos' ? ' '+fmtGBP(c.raw) : ' '+fmtNum(c.raw)+' pedidos' } } },
+    scales:{
+      x:{ grid:{ display:false }, border:{ color: GRID } },
+      y:{ position:'left', grid:{ color: GRID }, border:{ display:false }, ticks:{ callback:(v)=>'£'+(v/1000)+'K' } },
+      y1:{ position:'right', grid:{ display:false }, border:{ display:false } }
+    }
+  }
+});
+
+const ventasDia = {"Lunes":1779575.04,"Martes":2178632.61,"Miércoles":1851147.81,"Jueves":2203161.24,"Viernes":1840340.23,"Sábado":0,"Domingo":813827.61};
+new Chart(document.getElementById('chartDia'), {
+  type:'bar',
+  data:{ labels: Object.keys(ventasDia), datasets:[{ data: Object.values(ventasDia), backgroundColor: FOREST, borderRadius:2 }] },
+  options:{ responsive:true, maintainAspectRatio:false, ...baseGridOpts,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' '+fmtGBP(c.raw) } } },
+    scales:{ ...baseGridOpts.scales, y:{ ...baseGridOpts.scales.y, ticks:{ callback:(v)=>'£'+(v/1000)+'K' } } } }
+});
+
+const ventasHora = {"6":4.25,"7":31059.21,"8":283868.52,"9":990267.82,"10":1446742.70,"11":1239954.44,"12":1444245.88,"13":1265736.30,"14":1181812.37,"15":1352972.18,"16":754006.56,"17":461603.49,"18":144813.05,"19":50665.01,"20":18932.76};
+new Chart(document.getElementById('chartHora'), {
+  type:'line',
+  data:{ labels: Object.keys(ventasHora).map(h=>h+':00'), datasets:[{ data: Object.values(ventasHora), borderColor: STAMP, backgroundColor:'rgba(161,58,46,0.12)', fill:true, tension:.35, pointRadius:2 }] },
+  options:{ responsive:true, maintainAspectRatio:false, ...baseGridOpts,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' '+fmtGBP(c.raw) } } },
+    scales:{ ...baseGridOpts.scales, y:{ ...baseGridOpts.scales.y, ticks:{ callback:(v)=>'£'+(v/1000)+'K' } } } }
+});
+
+const topProdIng = {"DOTCOM POSTAGE":206248.77,"REGENCY CAKESTAND 3 TIER":174484.74,"PAPER CRAFT, LITTLE BIRDIE":168469.6,"WHITE HANGING HEART T-LIGHT HOLDER":106292.77,"PARTY BUNTING":99504.33,"JUMBO BAG RED RETROSPOT":94340.05,"MEDIUM CERAMIC TOP STORAGE JAR":81700.92,"MANUAL":78112.82,"POSTAGE":78101.88,"RABBIT NIGHT LIGHT":66964.99};
+function hbar(ctx, dataObj, color, fmt){
+  const labels = Object.keys(dataObj).map(l => l.length>28? l.slice(0,26)+'…': l);
+  return new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ data: Object.values(dataObj), backgroundColor: color, borderRadius:2 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' '+fmt(c.raw) } } },
+      scales:{ x:{ grid:{ color: GRID }, border:{display:false}, ticks:{ callback:(v)=> fmt(v) } }, y:{ grid:{ display:false }, border:{display:false} } }
+    }
+  });
+}
+hbar(document.getElementById('chartProdIng'), topProdIng, BRASS_L, fmtGBP);
+
+const topProdUnid = {"PAPER CRAFT, LITTLE BIRDIE":80995,"MEDIUM CERAMIC TOP STORAGE JAR":78033,"WORLD WAR 2 GLIDERS ASSTD DESIGNS":55047,"JUMBO BAG RED RETROSPOT":48474,"WHITE HANGING HEART T-LIGHT HOLDER":37891,"POPCORN HOLDER":36761,"ASSORTED COLOUR BIRD ORNAMENT":36461,"PACK OF 72 RETROSPOT CAKE CASES":36419,"RABBIT NIGHT LIGHT":30788,"MINI PAINT SET VINTAGE":26633};
+hbar(document.getElementById('chartProdUnid'), topProdUnid, SLATE, fmtNum);
+
+const topDevol = {"PAPER CRAFT, LITTLE BIRDIE":80995,"MEDIUM CERAMIC TOP STORAGE JAR":74494,"ROTATING SILVER ANGELS T-LIGHT HLDR":9376,"MANUAL":4066,"FAIRY CAKE FLANNEL ASSORTED COLOUR":3150,"PINK BLUE FELT CRAFT TRINKET BOX":2617,"WHITE HANGING HEART T-LIGHT HOLDER":2578,"GIN + TONIC DIET METAL SIGN":2030,"HERB MARKER BASIL":1527,"FELTCRAFT DOLL MOLLY":1447};
+hbar(document.getElementById('chartDevol'), topDevol, STAMP, fmtNum);
+
+const paisesConUK = {"United Kingdom":9025222.08,"Netherlands":285446.34,"EIRE":283453.96,"Germany":228867.14,"France":209715.11,"Australia":138521.31,"Spain":61577.11,"Switzerland":57089.90,"Belgium":41196.34,"Sweden":38378.33};
+new Chart(document.getElementById('chartPaisConUK'), {
+  type:'bar',
+  data:{ labels: Object.keys(paisesConUK), datasets:[{ data: Object.values(paisesConUK), backgroundColor: INK, borderRadius:2 }] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' '+fmtGBP(c.raw) } } },
+    scales:{ x:{ type:'logarithmic', grid:{ color: GRID }, border:{display:false}, ticks:{ callback:(v)=>{ if([100,1000,10000,100000,1000000,10000000].includes(v)) return '£'+fmtNum(v); } } },
+      y:{ grid:{ display:false }, border:{display:false} } }
+  }
+});
+
+const paisesSinUK = {"Netherlands":285446.34,"EIRE":283453.96,"Germany":228867.14,"France":209715.11,"Australia":138521.31,"Spain":61577.11,"Switzerland":57089.90,"Belgium":41196.34,"Sweden":38378.33};
+hbar(document.getElementById('chartPaisSinUK'), paisesSinUK, BRASS, fmtGBP);
+
+const segmentos = [
+  {"seg":"Campeones","clientes":934,"ingreso":6255336.53,"pctIng":70.19,"pctCli":21.53},
+  {"seg":"Clientes Leales","clientes":1008,"ingreso":1408629.91,"pctIng":15.81,"pctCli":23.24},
+  {"seg":"Potenciales","clientes":1092,"ingreso":882612.66,"pctIng":9.90,"pctCli":25.17},
+  {"seg":"En Riesgo","clientes":759,"ingreso":259877.89,"pctIng":2.92,"pctCli":17.50},
+  {"seg":"Perdidos / Bajo Valor","clientes":545,"ingreso":104950.91,"pctIng":1.18,"pctCli":12.56}
+];
+const segColors = [FOREST, BRASS_L, SLATE, '#C99A4A', STAMP];
+
+new Chart(document.getElementById('chartSegClientes'), {
+  type:'doughnut',
+  data:{ labels: segmentos.map(s=>s.seg), datasets:[{ data: segmentos.map(s=>s.clientes), backgroundColor: segColors, borderColor:'#F3F0E5', borderWidth:2 }] },
+  options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+    plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10.5} } },
+      tooltip:{ callbacks:{ label:(c)=> ` ${c.label}: ${fmtNum(c.raw)} clientes` } } } }
+});
+
+new Chart(document.getElementById('chartSegIngresos'), {
+  type:'bar',
+  data:{ labels: segmentos.map(s=>s.seg), datasets:[{ data: segmentos.map(s=>s.pctIng), backgroundColor: segColors, borderRadius:2 }] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>' '+c.raw+'% del ingreso total' } } },
+    scales:{ x:{ grid:{ color: GRID }, border:{display:false}, ticks:{ callback:(v)=>v+'%' }, max:80 }, y:{ grid:{ display:false }, border:{display:false} } } }
+});
+
+const paretoX = [0,5,10,15,20,21.5,30,40,44.8,50,60,70,80,90,100];
+const paretoY = [0,22,40,55,66,70.2,76,81,86,88.5,92,95.5,98,99.4,100];
+new Chart(document.getElementById('chartPareto'), {
+  type:'line',
+  data:{ labels: paretoX.map(v=>v+'%'), datasets:[
+    { data: paretoY, borderColor: BRASS, backgroundColor:'rgba(150,112,47,0.12)', fill:true, tension:.3, pointRadius:0, label:'% Ingreso acumulado' },
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:true, position:'top', align:'end', labels:{ boxWidth:10 } },
+      tooltip:{ callbacks:{ label:(c)=> ' '+c.raw+'% del ingreso' } } },
+    scales:{
+      x:{ title:{ display:true, text:'% acumulado de clientes' }, grid:{ display:false }, border:{ color: GRID } },
+      y:{ title:{ display:true, text:'% acumulado de ingresos' }, grid:{ color: GRID }, border:{ display:false }, max:100, ticks:{ callback:(v)=>v+'%' } }
+    } }
+});
+
+const topClientes = [
+  {"id":14646,"gasto":280206.02,"pedidos":73,"recencia":2,"seg":"Campeones"},
+  {"id":18102,"gasto":259657.30,"pedidos":60,"recencia":1,"seg":"Campeones"},
+  {"id":17450,"gasto":194550.79,"pedidos":46,"recencia":8,"seg":"Campeones"},
+  {"id":16446,"gasto":168472.50,"pedidos":2,"recencia":1,"seg":"Campeones"},
+  {"id":14911,"gasto":143825.06,"pedidos":201,"recencia":1,"seg":"Campeones"},
+  {"id":12415,"gasto":124914.53,"pedidos":21,"recencia":24,"seg":"Campeones"},
+  {"id":14156,"gasto":117379.63,"pedidos":55,"recencia":10,"seg":"Campeones"},
+  {"id":17511,"gasto":91062.38,"pedidos":31,"recencia":3,"seg":"Campeones"},
+  {"id":16029,"gasto":81024.84,"pedidos":63,"recencia":39,"seg":"Campeones"},
+  {"id":12346,"gasto":77183.60,"pedidos":1,"recencia":326,"seg":"Potenciales"}
+];
+const tbody = document.getElementById('tablaClientes');
+tbody.innerHTML = topClientes.map(c => `
+  <tr>
+    <td>#${c.id}</td>
+    <td>${fmtGBP(c.gasto)}</td>
+    <td>${c.pedidos}</td>
+    <td>${c.recencia} día${c.recencia===1?'':'s'}</td>
+    <td><span class="badge ${c.seg==='Campeones'?'champ':'pot'}">${c.seg}</span></td>
+  </tr>`).join('');
+</script>
+
+</body>
+</html>
+
