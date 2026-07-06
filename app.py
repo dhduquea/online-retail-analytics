@@ -19,7 +19,7 @@ from datetime import timedelta
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 👉 Cambia "data" por el nombre real de tu subcarpeta donde está el Excel.
-DATA_PATH = os.path.join(BASE_DIR, "data\\raw", "Online Retail.xlsx")
+DATA_PATH = os.path.join(BASE_DIR, "data/raw", "Online Retail.xlsx")
 
 # --------------------------------------------------------------------------
 # CONFIGURACIÓN DE PÁGINA
