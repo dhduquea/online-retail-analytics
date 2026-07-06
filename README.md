@@ -17,7 +17,9 @@ Transacciones de un comercio online del Reino Unido entre el **01 dic 2010** y e
 | `reporte_ventas_ecommerce.html` | Reporte web interactivo con los resultados y gráficos |
 | `reporte_ventas_ecommerce.js` | Script con la lógica de los gráficos del reporte web (debe estar en la misma carpeta que el `.html`) |
 | `reporte_ejecutivo_ventas.md` | Resumen ejecutivo de una página con hallazgos y recomendaciones |
-| `requirements.txt` | Librerías de Python necesarias para ejecutar el notebook |
+| `diccionario_datos.md` | Descripción de cada columna del dataset original y de las columnas derivadas del análisis |
+| `app.py` | Dashboard interactivo en Streamlit con filtros dinámicos (fecha, país, segmento RFM) |
+| `requirements.txt` | Librerías de Python necesarias para ejecutar el notebook y el dashboard |
 
 ## Cómo ejecutar el notebook
 
@@ -35,6 +37,35 @@ Transacciones de un comercio online del Reino Unido entre el **01 dic 2010** y e
 
 3. Ejecuta todas las celdas en orden (`Kernel > Restart & Run All`).
 
+## Cómo ejecutar el dashboard interactivo (Streamlit)
+
+1. Instala las dependencias (incluidas en `requirements.txt`):
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Estructura de carpetas esperada — `app.py` busca el Excel en una subcarpeta llamada `data`, ubicada junto a `app.py`:
+
+   ```
+   proyecto/
+   ├── app.py
+   └── data/
+       └── Online_Retail.xlsx
+   ```
+
+   Si tu subcarpeta tiene otro nombre, ajusta la línea `DATA_PATH` al inicio de `app.py`.
+
+3. Ejecuta el dashboard (funciona desde cualquier ubicación, no depende de la carpeta actual):
+
+   ```bash
+   streamlit run app.py
+   ```
+
+4. Se abrirá automáticamente en el navegador, normalmente en `http://localhost:8501`.
+
+**Filtros interactivos disponibles:** rango de fechas, país, segmento de cliente (RFM) e inclusión de devoluciones/cancelaciones. Incluye pestañas para Tendencia, Productos, Geografía, Clientes (RFM) y Devoluciones, con tablas descargables en CSV.
+
 ## Cómo visualizar el reporte web
 
 1. Asegúrate de que `reporte_ventas_ecommerce.html` y `reporte_ventas_ecommerce.js` estén en la **misma carpeta**.
@@ -49,7 +80,7 @@ Transacciones de un comercio online del Reino Unido entre el **01 dic 2010** y e
 - Fuerte estacionalidad: pico de ventas en noviembre, sin actividad los sábados.
 - Tasa de cancelación/devolución del **14.81%**, concentrada en pocas referencias.
 
-El detalle completo de hallazgos y recomendaciones está en `reporte_ejecutivo_ventas.md` y en el reporte web.
+El detalle completo de hallazgos y recomendaciones está en `reporte_ejecutivo_ventas.md`, en el reporte web y en el dashboard interactivo. Para el detalle de cada columna del dataset, ver `diccionario_datos.md`.
 
 ## Metodología
 
